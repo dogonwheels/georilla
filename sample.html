@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+		<title>Geolocation Test</title>
+ 
+		<script language="javascript" type="text/javascript">
+			function getLocation() {
+				// Get location no more than 10 minutes old. 600000 ms = 10 minutes.
+				navigator.geolocation.getCurrentPosition(showLocation, showError, {enableHighAccuracy:true,maximumAge:600000});
+			}
+ 
+			function showError(error) {
+				alert(error.code + ' ' + error.message);
+			}
+ 
+			function showLocation(position) {
+				document.getElementById('geoinfo').innerHTML='<p>Latitude: ' + position.coords.latitude + '</p>' 
+				+ '<p>Longitude: ' + position.coords.longitude + '</p>' 
+				+ '<p>Accuracy: ' + position.coords.accuracy + '</p>' 
+				+ '<p>Altitude: ' + position.coords.altitude + '</p>' 
+				+ '<p>Altitude accuracy: ' + position.coords.altitudeAccuracy + '</p>' 
+				+ '<p>Speed: ' + position.coords.speed + '</p>' 
+				+ '<p>Heading: ' + position.coords.heading + '</p>';
+			}
+		</script>
+	</head>
+	<body>
+		<script language="javascript" type="text/javascript">	
+			if (navigator.geolocation) {  
+				document.write('<p><input type="button" onclick="getLocation()" value="Show Geolocation Information" /></p>');
+			} else {  
+				document.write('<p>Sorry, your device or browser software does not appear to support geolocation services.</p>');  
+			}  
+		</script>
+ 
+		<div id="geoinfo"></div>
+	</body>
+</html>
+
