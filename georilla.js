@@ -1,7 +1,7 @@
 var georilla = {};
 georilla.punch = function () {
     console.log('Patching geolocation with georilla');
-    navigator.geolocation = georilla.geolocation;
+    navigator.__defineGetter__('geolocation', function () { return georilla.geolocation; });
 };
 
 georilla.geolocation = {};
