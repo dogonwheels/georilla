@@ -5,34 +5,27 @@
   <script src="jquery-1.4.2.js"></script>
   <link rel="stylesheet" href="qunit.css" type="text/css" media="screen" />
   <script type="text/javascript" src="qunit.js"></script>
-  <meta http-equiv="refresh" content="10" />
+  <script type="text/javascript" src="georilla.js"></script>
   <script>
   $(document).ready(function(){
 
+module('One shot position');
 
-test("a basic test example", function() {
-  ok( true, "this test is fine" );
-  var value = "hello";
-  equals( "hello", value, "We expect value to be hello" );
+test('Can manually set positions', function () {
+    var geo = georilla.geolocation;
+    ok(true, "Got my georila");
+    equals(1, 1, "1 == 1");
 });
 
-module("Module A");
+asyncTest('Success alwyas called', function() {  
+    var success = function () {
+        ok(true, "asyncy");
+        start(); 
+    };
+    var geo = georilla.geolocation;
+    geo.getCurrentPosition(success);
+});  
 
-test("first test within module", function() {
-  ok( true, "all pass" );
-});
-
-test("second test within module", function() {
-  ok( true, "all pass" );
-});
-
-module("Module B");
-
-test("some other test", function() {
-  expect(2);
-  equals( true, false, "failing test" );
-  equals( true, true, "passing test" );
-});
 
   });
   </script>
