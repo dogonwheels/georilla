@@ -1,65 +1,93 @@
 var georilla = {};
+
 georilla.punch = function () {
     console.log('Patching geolocation with georilla');
-    navigator.__defineGetter__('geolocation', function () { return georilla.geolocation; });
+    var geo = georilla.newGeolocation();
+    navigator.__defineGetter__('geolocation', function () { return geo; });
 };
 
-georilla.geolocation = {};
+var exists = function (something) {
+    return typeof(something) !== 'undefined';
+};
 
-/*
-   void getCurrentPosition(in PositionCallback successCallback,
-                           in optional PositionErrorCallback errorCallback,
-                           in optional PositionOptions options);
-*/
-georilla.geolocation.getCurrentPosition = function (successCallback, errorCallback, options) {
-    var position = {
-        coords: {
-            latitude: 200,
-            longitude: 100,
-            accuracy: 50,
-            altitude: 0,
-            altitudeAccuracy: 100,
-            speed: -1,
-            heading: 10,
+
+georilla.newGeolocation = function () {
+    var geo = {};
+    /*
+       void getCurrentPosition(in PositionCallback successCallback,
+                               in optional PositionErrorCallback errorCallback,
+                               in optional PositionOptions options);
+    */
+    geo.getCurrentPosition = function (successCallback, errorCallback, options) {
+        if (typeof(geo.currentPosition) === 'undefined') {
+            // Currently don't have any positions, but we should callback when
+            // we do get one
+            geo.successCallback = successCallback;            
+        } else {
+            successCallback(geo.currentPosition);
         }
     };
-    // Always succeed for now
-    // FIXME: Need to allow for errors
-    // FIXME: Redirect position to a cursor (runner) and device for introducing
-    // errors
-    var success = function () {
-        successCallback(position);
+
+    geo.setCurrentPosition = function (position) {
+        geo.currentPosition = position;
+        // If we have any active callbacks, let them know and remove them
+        if (exists(geo.successCallback)) {
+            geo.successCallback(position);
+            delete geo.successCallback;
+        }
     };
 
-    setTimeout(success, 1000);
+    /*
+       long watchPosition(in PositionCallback successCallback,
+                          in optional PositionErrorCallback errorCallback,
+                          in optional PositionOptions options);
+    */
+
+    /*
+       void clearWatch(in long watchId);
+    */
+
+    /*
+     [Callback=FunctionOnly, NoInterfaceObject]
+     interface PositionCallback {
+       void handleEvent(in Position position);
+     };
+
+     [Callback=FunctionOnly, NoInterfaceObject]
+     interface PositionErrorCallback {
+       void handleEvent(in PositionError error);
+     };
+
+     [Callback, NoInterfaceObject]
+      interface PositionOptions {
+        attribute boolean enableHighAccuracy;
+        attribute long timeout;
+        attribute long maximumAge;
+      };
+
+      interface Position {
+        readonly attribute Coordinates coords;
+        readonly attribute DOMTimeStamp timestamp;
+      };
+      
+      interface Coordinates {
+        readonly attribute double latitude;
+        readonly attribute double longitude;
+        readonly attribute double? altitude;
+        readonly attribute double accuracy;
+        readonly attribute double? altitudeAccuracy;
+        readonly attribute double? heading;
+        readonly attribute double? speed;
+      };
+      
+      interface PositionError {
+        const unsigned short PERMISSION_DENIED = 1;
+        const unsigned short POSITION_UNAVAILABLE = 2;
+        const unsigned short TIMEOUT = 3;
+        readonly attribute unsigned short code;
+        readonly attribute DOMString message;
+      };
+      
+    */
+    return geo;
 };
-
-/*
-   long watchPosition(in PositionCallback successCallback,
-                      in optional PositionErrorCallback errorCallback,
-                      in optional PositionOptions options);
-*/
-
-/*
-   void clearWatch(in long watchId);
-*/
-
-/*
- [Callback=FunctionOnly, NoInterfaceObject]
- interface PositionCallback {
-   void handleEvent(in Position position);
- };
-
- [Callback=FunctionOnly, NoInterfaceObject]
- interface PositionErrorCallback {
-   void handleEvent(in PositionError error);
- };
-
- [Callback, NoInterfaceObject]
-  interface PositionOptions {
-    attribute boolean enableHighAccuracy;
-    attribute long timeout;
-    attribute long maximumAge;
-  };
-
-*/
