@@ -16,26 +16,54 @@ var fakePosition0 =  { coords : { latitude: 1, longitude: 2, accuracy: 3 },
 var fakePosition1 =  { coords : { latitude: 2, longitude: 3, accuracy: 4 },
                        timestamp: 5 }
 
-asyncTest('Notified when position already set', function() {  
+test('Notified when position already set', function() {  
     var onSuccess = function (latestPosition) {
         equals(latestPosition, fakePosition0, "Successfully set position");
-        start();
     };
     var geo = georilla.newGeolocation();
     geo.setCurrentPosition(fakePosition0);
     geo.getCurrentPosition(onSuccess);
 });
 
-asyncTest('Notified when position set within timeout', function() {
+asyncTest('Notified when position set within timeout', function () {
+    var good = 0;
     var onSuccess = function (latestPosition) {
+        good++;
         equals(latestPosition, fakePosition0, "Successfully set position");
-        start();
     };
     var geo = georilla.newGeolocation();
     // Default timeout in infinite, so we should get called with the latest
     // position when it's set after the call to getCurrentPosition
     geo.getCurrentPosition(onSuccess);
     geo.setCurrentPosition(fakePosition0);
+
+    var setPosition = function () {
+        geo.setCurrentPosition(fakePosition0);
+        equals(good, 2);
+    };
+    var endTest = function () {
+        equals(good, 2);
+        start();
+    }
+
+    // And use a real timeout
+    geo.getCurrentPosition(onSuccess, function () {}, { timeout: 50 });
+    setTimeout(setPosition, 25);
+    setTimeout(endTest, 60);
+});
+
+asyncTest('Not notified if outwith timeout', function () {
+    var onSuccess = function (latestPosition) {
+        ok(false, 'Should have timed out before position was set');
+    };
+    var setPosition = function () {
+        geo.setCurrentPosition(fakePosition0);
+        start();
+    };
+
+    var geo = georilla.newGeolocation();
+    geo.getCurrentPosition(onSuccess, function () {}, { timeout: 50 });
+    setTimeout(setPosition, 60);
 });
 
 asyncTest('Only notified once', function() {
@@ -86,7 +114,7 @@ test('Zero timeout only works if position cached', function() {
     geo.getCurrentPosition(onSuccess, onError, options);
 });
 
-asyncTest('Respect age of positions', function() {
+test('Respect age of positions', function() {
     var geo = georilla.newGeolocation();
     geo.setCurrentPosition(fakePosition0); // Has timestamp of 4
     geo.setCurrentTime(6);

@@ -50,7 +50,7 @@ georilla.newGeolocation = function () {
                 delete geo.successCallback;
                 errorCallback({code: 'TIMEOUT'});
             };
-            setTimeout(timeout, onTimeout);
+            setTimeout(onTimeout, timeout);
         }
 
     };
