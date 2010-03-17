@@ -174,6 +174,7 @@ var QUnit = {
 					if ( assertion.result ) {
 						good++;
 					} else {
+                                                ol.style.display = "block";
 						bad++;
 						config.stats.bad++;
 						config.moduleStats.bad++;
