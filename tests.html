@@ -16,15 +16,6 @@ var fakePosition0 =  { coords : { latitude: 1, longitude: 2, accuracy: 3 },
 var fakePosition1 =  { coords : { latitude: 2, longitude: 3, accuracy: 4 },
                        timestamp: 5 }
 
-test('Notified when position already set', function() {  
-    var onSuccess = function (latestPosition) {
-        equals(latestPosition, fakePosition0, "Successfully set position");
-    };
-    var geo = georilla.newGeolocation();
-    geo.setCurrentPosition(fakePosition0);
-    geo.getCurrentPosition(onSuccess);
-});
-
 asyncTest('Notified when position set within timeout', function () {
     var good = 0;
     var onSuccess = function (latestPosition) {
@@ -88,7 +79,7 @@ asyncTest('Only notified once', function() {
     geo.setCurrentPosition(fakePosition1);
 });
 
-test('Zero timeout only works if position cached', function() {
+test('Zero timeout only works if position cached - otherwise fail', function() {
     var onSuccess = function (latestPosition) {
         ok(expectSuccess, 'Should have failed');
     };
