@@ -17,53 +17,61 @@ var fakePosition1 =  { coords : { latitude: 2, longitude: 3, accuracy: 4 },
                        timestamp: 5 }
 
 asyncTest('Notified when position already set', function() {  
-    var success = function (latestPosition) {
+    var onSuccess = function (latestPosition) {
         equals(latestPosition, fakePosition0, "Successfully set position");
         start();
     };
     var geo = georilla.newGeolocation();
     geo.setCurrentPosition(fakePosition0);
-    geo.getCurrentPosition(success);
+    geo.getCurrentPosition(onSuccess);
 });
 
 asyncTest('Notified when position set within timeout', function() {
-    var success = function (latestPosition) {
+    var onSuccess = function (latestPosition) {
         equals(latestPosition, fakePosition0, "Successfully set position");
         start();
     };
-
     var geo = georilla.newGeolocation();
     // Default timeout in infinite, so we should get called with the latest
     // position when it's set after the call to getCurrentPosition
-    geo.getCurrentPosition(success);
+    geo.getCurrentPosition(onSuccess);
     geo.setCurrentPosition(fakePosition0);
 });
 
 asyncTest('Only notified once', function() {
     count = 0;
-    var success = function (latestPosition) {
+    var onSuccess = function (latestPosition) {
         count++;
         equals(count, 1, "Success only called once");
         start();
     }
     var geo = georilla.newGeolocation();
-    geo.getCurrentPosition(success);
+    geo.getCurrentPosition(onSuccess);
     geo.setCurrentPosition(fakePosition0);
     geo.setCurrentPosition(fakePosition1);
 });
 
 
-asyncTest('Receive timeout error when position not set within timeout', function() {
-    // Set the timeout to a negative value - so no timeout
+test('Zero timeout only works if position already exists', function() {
+    var onSuccess = function (latestPosition) {
+        ok(false, 'Should not succeed');
+    };
+    var onError = function (error) {
+        equals(error.code, 'TIMEOUT');
+    };
 
-    // Use a small timeout
+    // Set the timeout to a negative value - so no timeout
+    var options = { timeout: -1 };
+    var geo = georilla.newGeolocation();
+    geo.getCurrentPosition(onSuccess, onError, options);
+    geo.setCurrentPosition(fakePosition0);
 
 });
-
+/*
 asyncTest('Respect age of positions', function() {
 });
 
-
+*/
 
 });
   </script>

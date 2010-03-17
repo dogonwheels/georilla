@@ -19,13 +19,31 @@ georilla.newGeolocation = function () {
                                in optional PositionOptions options);
     */
     geo.getCurrentPosition = function (successCallback, errorCallback, options) {
-        if (typeof(geo.currentPosition) === 'undefined') {
-            // Currently don't have any positions, but we should callback when
-            // we do get one
-            geo.successCallback = successCallback;            
-        } else {
+        if (exists(geo.currentPosition)) {
+            // We have a cached position, callback straightaway
             successCallback(geo.currentPosition);
         }
+
+        if (exists(options) && exists(options.timeout)) {
+            var timeout = options.timeout;
+            if (timeout <= 0) {
+                errorCallback({code: 'TIMEOUT'});
+                return;
+            }
+        }
+
+        // Currently don't have any positions, but we should callback when
+        // we do get one
+        geo.successCallback = successCallback;            
+        
+        if (exists(timeout)) {
+            var onTimeout = function () {
+                delete geo.successCallback;
+                errorCallback({code: 'TIMEOUT'});
+            };
+            setTimeout(timeout, onTimeout);
+        }
+
     };
 
     geo.setCurrentPosition = function (position) {
