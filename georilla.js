@@ -12,16 +12,25 @@ var exists = function (something) {
 
 
 georilla.newGeolocation = function () {
-    var geo = {};
+    var geo = {
+        currentTime: 0
+    };
     /*
        void getCurrentPosition(in PositionCallback successCallback,
                                in optional PositionErrorCallback errorCallback,
                                in optional PositionOptions options);
     */
     geo.getCurrentPosition = function (successCallback, errorCallback, options) {
-        if (exists(geo.currentPosition)) {
+        var maximumAge = 0;
+        if (exists(options) && exists(options.maximumAge)) {
+            maximumAge = options.maximumAge;
+        }
+
+        if (exists(geo.currentPosition) && 
+            (geo.currentTime - geo.currentPosition.timestamp) <= maximumAge) {
             // We have a cached position, callback straightaway
             successCallback(geo.currentPosition);
+            return;
         }
 
         if (exists(options) && exists(options.timeout)) {
@@ -53,6 +62,10 @@ georilla.newGeolocation = function () {
             geo.successCallback(position);
             delete geo.successCallback;
         }
+    };
+
+    geo.setCurrentTime = function (timestamp) {
+        geo.currentTime = timestamp;
     };
 
     /*

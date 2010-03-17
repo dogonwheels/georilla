@@ -43,35 +43,72 @@ asyncTest('Only notified once', function() {
     var onSuccess = function (latestPosition) {
         count++;
         equals(count, 1, "Success only called once");
-        start();
     }
+    // Try with no timeout
     var geo = georilla.newGeolocation();
     geo.getCurrentPosition(onSuccess);
     geo.setCurrentPosition(fakePosition0);
     geo.setCurrentPosition(fakePosition1);
+
+    // And check still only notify once with a timeout
+    count = 0;
+    geo.getCurrentPosition(onSuccess, function () {}, { timeout: 10 });
+   
+    // Restart running tests
+    setTimeout(start, 20);
+    geo.setCurrentPosition(fakePosition0);
+    geo.setCurrentPosition(fakePosition1);
 });
 
-
-test('Zero timeout only works if position already exists', function() {
+test('Zero timeout only works if position cached', function() {
     var onSuccess = function (latestPosition) {
-        ok(false, 'Should not succeed');
+        ok(expectSuccess, 'Should have failed');
     };
     var onError = function (error) {
-        equals(error.code, 'TIMEOUT');
+        if (!expectSuccess) {
+            equals(error.code, 'TIMEOUT');
+        } else {
+            ok(false, 'Should have succeeded');
+        }
     };
 
     // Set the timeout to a negative value - so no timeout
     var options = { timeout: -1 };
     var geo = georilla.newGeolocation();
+    
+    // This will fail since we have nothing cached
+    var expectSuccess = false;
     geo.getCurrentPosition(onSuccess, onError, options);
+
+    // Add a position so the lack of timeout doesn't matter
     geo.setCurrentPosition(fakePosition0);
-
+    expectSuccess = true;
+    geo.getCurrentPosition(onSuccess, onError, options);
 });
-/*
+
 asyncTest('Respect age of positions', function() {
+    var geo = georilla.newGeolocation();
+    geo.setCurrentPosition(fakePosition0); // Has timestamp of 4
+    geo.setCurrentTime(6);
+
+    // The current time is 2 beyond the last position - so a max age of 3 is
+    // fine.
+    var onSuccessPosition0 = function (position) {
+        equals(position, fakePosition0, "Successfully set position");
+    };
+    geo.getCurrentPosition(onSuccessPosition0, function () {}, { maximumAge: 3 });
+
+    // While asking for something newer should mean we end up waiting until a
+    // new position that's more recent is set. Position0 is more than 1 old,
+    // position1 is 1 old
+    var onSuccessPosition1 = function (position) {
+        equals(position, fakePosition1, "Successfully set position");
+        start();
+    }
+    geo.getCurrentPosition(onSuccessPosition1, function () {}, { maximumAge: 1 });
+    geo.setCurrentPosition(fakePosition1);
 });
 
-*/
 
 });
   </script>
