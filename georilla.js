@@ -13,7 +13,9 @@ var exists = function (something) {
 
 georilla.newGeolocation = function () {
     var geo = {
-        currentTime: 0
+        currentTime: 0,
+        nextWatchId: 0,
+        watchSuccessCallbacks: {}
     };
     /*
        void getCurrentPosition(in PositionCallback successCallback,
@@ -57,10 +59,18 @@ georilla.newGeolocation = function () {
 
     geo.setCurrentPosition = function (position) {
         geo.currentPosition = position;
+        
         // If we have any active callbacks, let them know and remove them
         if (exists(geo.successCallback)) {
             geo.successCallback(position);
             delete geo.successCallback;
+        }
+
+        // And let any watchers know
+        for (watchId in geo.watchSuccessCallbacks) {
+            if (geo.watchSuccessCallbacks.hasOwnProperty(watchId)) {
+                geo.watchSuccessCallbacks[watchId](position);
+            }
         }
     };
 
@@ -73,10 +83,22 @@ georilla.newGeolocation = function () {
                           in optional PositionErrorCallback errorCallback,
                           in optional PositionOptions options);
     */
+    geo.watchPosition = function (successCallback, errorCallback, options) {
+        if (exists(geo.currentPosition)) {
+            successCallback(geo.currentPosition);
+        }
+
+        geo.nextWatchId++;
+        geo.watchSuccessCallbacks[geo.nextWatchId] = successCallback;
+        return geo.nextWatchId;
+    };
 
     /*
        void clearWatch(in long watchId);
     */
+    geo.clearWatch = function (watchId) {
+        delete(geo.watchSuccessCallbacks[watchId]);
+    }
 
     /*
      [Callback=FunctionOnly, NoInterfaceObject]

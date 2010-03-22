@@ -57,7 +57,7 @@ asyncTest('Not notified if outwith timeout', function () {
     setTimeout(setPosition, 60);
 });
 
-asyncTest('Only notified once', function() {
+asyncTest('Only notified once', function () {
     count = 0;
     var onSuccess = function (latestPosition) {
         count++;
@@ -105,7 +105,7 @@ test('Zero timeout only works if position cached - otherwise fail', function() {
     geo.getCurrentPosition(onSuccess, onError, options);
 });
 
-test('Respect age of positions', function() {
+test('Respect age of positions', function () {
     var geo = georilla.newGeolocation();
     geo.setCurrentPosition(fakePosition0); // Has timestamp of 4
     geo.setCurrentTime(6);
@@ -128,6 +128,45 @@ test('Respect age of positions', function() {
     geo.setCurrentPosition(fakePosition1);
 });
 
+test('Get notified when watching', function () {
+    var geo = georilla.newGeolocation();
+
+    var watch1Position;
+    var onWatch1Success = function (position) {
+        watch1Position = position;
+    };
+    var watch2Position;
+    var onWatch2Success = function (position) {
+        watch2Position = position;
+    };
+
+    watch1Id = geo.watchPosition(onWatch1Success);
+    equals(typeof(watch1Position), 'undefined');
+    equals(typeof(watch2Position), 'undefined');
+
+    geo.setCurrentPosition(fakePosition0);
+    equals(watch1Position, fakePosition0);
+    equals(typeof(watch2Position), 'undefined');
+
+    watch2Id = geo.watchPosition(onWatch2Success);
+    equals(watch2Position, fakePosition0);
+    
+    geo.setCurrentPosition(fakePosition1);
+    equals(watch1Position, fakePosition1);
+    equals(watch2Position, fakePosition1);
+
+    geo.clearWatch(watch1Id);
+
+    geo.setCurrentPosition(fakePosition0);
+    equals(watch1Position, fakePosition1);
+    equals(watch2Position, fakePosition0);
+});
+
+test('Timeout observed when watching', function () {
+});
+
+test('Watching respects age when cached position available', function () {
+});
 
 });
   </script>
