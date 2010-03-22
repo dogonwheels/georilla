@@ -1,4 +1,6 @@
-watchPosition faked
+add age to watch
+add timeout to watch
+remove dupes in watch and get
 punch -> patch and unpatch
 tests more consistent
 push to github
