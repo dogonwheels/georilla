@@ -84,11 +84,16 @@ georilla.newGeolocation = function () {
                           in optional PositionOptions options);
     */
     geo.watchPosition = function (successCallback, errorCallback, options) {
+        geo.nextWatchId++;
+
+        if (exists(options) && exists(options.timeout)) {
+            var timerId = setTimeout(errorCallback, options.timeout);
+            // Stash timerid somewhere
+        }
         if (exists(geo.currentPosition)) {
             successCallback(geo.currentPosition);
         }
 
-        geo.nextWatchId++;
         geo.watchSuccessCallbacks[geo.nextWatchId] = successCallback;
         return geo.nextWatchId;
     };
@@ -97,6 +102,7 @@ georilla.newGeolocation = function () {
        void clearWatch(in long watchId);
     */
     geo.clearWatch = function (watchId) {
+        // FIXME: cancel any error timers
         delete(geo.watchSuccessCallbacks[watchId]);
     }
 

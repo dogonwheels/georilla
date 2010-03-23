@@ -10,7 +10,6 @@
   $(document).ready(function(){
 
 module('Geolocation');
-
 var fakePosition0 =  { coords : { latitude: 1, longitude: 2, accuracy: 3 },
                        timestamp: 4 }
 var fakePosition1 =  { coords : { latitude: 2, longitude: 3, accuracy: 4 },
@@ -49,6 +48,7 @@ asyncTest('Not notified if outwith timeout', function () {
     };
     var setPosition = function () {
         geo.setCurrentPosition(fakePosition0);
+        ok(true, 'Position set');
         start();
     };
 
@@ -122,7 +122,6 @@ test('Respect age of positions', function () {
     // position1 is 1 old
     var onSuccessPosition1 = function (position) {
         equals(position, fakePosition1, "Successfully set position");
-        start();
     }
     geo.getCurrentPosition(onSuccessPosition1, function () {}, { maximumAge: 1 });
     geo.setCurrentPosition(fakePosition1);
@@ -140,14 +139,14 @@ test('Get notified when watching', function () {
         watch2Position = position;
     };
 
-    watch1Id = geo.watchPosition(onWatch1Success);
+    var watch1Id = geo.watchPosition(onWatch1Success);
     equals(typeof(watch1Position), 'undefined', "New 1st watch not called when no cache");
 
     geo.setCurrentPosition(fakePosition0);
     equals(watch1Position, fakePosition0, "1st watch called with 1st position");
     equals(typeof(watch2Position), 'undefined', "Undefined 2nd watch not called");
 
-    watch2Id = geo.watchPosition(onWatch2Success);
+    var watch2Id = geo.watchPosition(onWatch2Success);
     equals(watch2Position, fakePosition0, "New 2nd watch called with cached position");
     
     geo.setCurrentPosition(fakePosition1);
@@ -161,7 +160,35 @@ test('Get notified when watching', function () {
     equals(watch2Position, fakePosition0, "2nd watch called with 3rd position");
 });
 
-test('Timeout observed when watching', function () {
+asyncTest('Timeout observed when watching', function () {
+    var geo = georilla.newGeolocation();
+
+    var watchPosition;
+    var onSuccess = function (position) {
+        watchPosition = position;
+    };
+    var numErrors = 0;
+    var onError = function (error) {
+        numErrors++;
+    };
+
+    var watchId = geo.watchPosition(onSuccess, onError, { timeout: 30 });
+    equals(numErrors, 0, "No error callbacks before timeout");
+    setTimeout(function () {
+        // Start watch at time:0, so timed out at 30
+        equals(numErrors, 1, "Timeout calls error callback");
+    }, 35);
+    setTimeout(function () {
+        geo.setCurrentPosition(fakePosition0);
+    }, 50);
+    setTimeout(function () {
+        equals(numErrors, 1, "Error callback not called before timeout");
+    }, 75);
+    setTimeout(function () {
+        // Last position was set at time:50, so timed out at 80
+        equals(numErrors, 2, "Timeout after position set also calls error callback");
+    }, 85);
+    setTimeout(start, 100);
 });
 
 test('Watching respects age when cached position available', function () {
