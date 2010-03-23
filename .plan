@@ -1,7 +1,6 @@
 add age to watch
-add timeout to watch
-remove dupes in watch and get
-punch -> patch and unpatch
 tests more consistent
 push to github
 add 00 to optional params
+add Infinity to getPosition
+set time on setCurrentPosition

@@ -1,6 +1,6 @@
 var georilla = {};
 
-georilla.punch = function () {
+georilla.patch = function () {
     console.log('Patching geolocation with georilla');
     var geo = georilla.newGeolocation();
     navigator.__defineGetter__('geolocation', function () { return geo; });
@@ -69,7 +69,10 @@ georilla.newGeolocation = function () {
         // And let any watchers know
         for (watchId in geo.watchSuccessCallbacks) {
             if (geo.watchSuccessCallbacks.hasOwnProperty(watchId)) {
-                geo.watchSuccessCallbacks[watchId](position);
+                var callbacks = geo.watchSuccessCallbacks[watchId];
+                callbacks.onSuccess(position);
+                callbacks.resetTimeout();
+                callbacks.startTimeout();
             }
         }
     };
@@ -86,15 +89,36 @@ georilla.newGeolocation = function () {
     geo.watchPosition = function (successCallback, errorCallback, options) {
         geo.nextWatchId++;
 
+        var timeout = Infinity;
         if (exists(options) && exists(options.timeout)) {
-            var timerId = setTimeout(errorCallback, options.timeout);
-            // Stash timerid somewhere
+            timeout = options.timeout;
         }
+        
+        var previousTimerId = -1;
+        var resetTimeout = function () {
+            clearTimeout(previousTimerId);
+        };
+        var startTimeout = function () {
+            var onError = function () {
+                if (exists(errorCallback)) {
+                    errorCallback( { code:'TIMEOUT' } );
+                }
+                startTimeout();
+            };
+            previousTimerId = setTimeout(onError, timeout);
+        };
+        startTimeout();
+
         if (exists(geo.currentPosition)) {
             successCallback(geo.currentPosition);
         }
 
-        geo.watchSuccessCallbacks[geo.nextWatchId] = successCallback;
+        geo.watchSuccessCallbacks[geo.nextWatchId] = {
+            onSuccess: successCallback,
+            resetTimeout: resetTimeout,
+            startTimeout: startTimeout
+        }
+        
         return geo.nextWatchId;
     };
 
@@ -102,7 +126,7 @@ georilla.newGeolocation = function () {
        void clearWatch(in long watchId);
     */
     geo.clearWatch = function (watchId) {
-        // FIXME: cancel any error timers
+        geo.watchSuccessCallbacks[watchId].resetTimeout();
         delete(geo.watchSuccessCallbacks[watchId]);
     }
 

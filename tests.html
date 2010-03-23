@@ -170,25 +170,47 @@ asyncTest('Timeout observed when watching', function () {
     var numErrors = 0;
     var onError = function (error) {
         numErrors++;
-    };
+        ok(exists(error), "Error provided");
+        equals(error.code, 'TIMEOUT', "Error type is TIMEOUT");
+    }; 
 
-    var watchId = geo.watchPosition(onSuccess, onError, { timeout: 30 });
+    var watchId = geo.watchPosition(onSuccess, onError, { timeout: 50 });
     equals(numErrors, 0, "No error callbacks before timeout");
     setTimeout(function () {
-        // Start watch at time:0, so timed out at 30
+        // Start watch at time:0, so timed out at 50
         equals(numErrors, 1, "Timeout calls error callback");
-    }, 35);
-    setTimeout(function () {
         geo.setCurrentPosition(fakePosition0);
-    }, 50);
+    }, 60);
     setTimeout(function () {
         equals(numErrors, 1, "Error callback not called before timeout");
-    }, 75);
+    }, 105);
     setTimeout(function () {
-        // Last position was set at time:50, so timed out at 80
+        // Last position was set at time:60, so timed out at 110
         equals(numErrors, 2, "Timeout after position set also calls error callback");
-    }, 85);
-    setTimeout(start, 100);
+        geo.clearWatch(watchId);
+    }, 150);
+    setTimeout(function () {
+        equals(numErrors, 2, "Cleared watchers don't notify");
+        start();
+    }, 200);
+});
+
+asyncTest('Timeout errors repeat if no position available', function () {
+    var geo = georilla.newGeolocation();
+
+    var numErrors = 0;
+    var onError = function (error) {
+        numErrors++;
+    };
+
+    var watchId = geo.watchPosition(function () {}, onError, { timeout: 50 });
+    setTimeout(function () {
+        equals(numErrors, 1, "Timeout error after one timeout");
+    }, 60);
+    setTimeout(function () {
+        equals(numErrors, 2, "Two timeout errors after two periods");
+        start();
+    }, 140);
 });
 
 test('Watching respects age when cached position available', function () {
