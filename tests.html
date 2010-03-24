@@ -80,7 +80,7 @@ test('Zero timeout only works if position cached', function() {
     var errors = 0;
     var onError = function (error) {
         errors++;
-        equals(error.code, 'TIMEOUT');
+        equals(error.code, 3);
     };
 
     // Set the timeout to a negative value - so no timeout
@@ -160,7 +160,7 @@ asyncTest('Timeout observed when watching', function () {
     var onError = function (error) {
         numErrors++;
         ok(exists(error), "Error provided");
-        equals(error.code, 'TIMEOUT', "Error type is TIMEOUT");
+        equals(error.code, 3, "Error type is TIMEOUT");
     }; 
 
     var watchId = geo.watchPosition(onSuccess, onError, { timeout: 50 });
@@ -192,7 +192,7 @@ asyncTest('Timeout errors repeat if no position available', function () {
         numErrors++;
     };
 
-    var watchId = geo.watchPosition(function () {}, onError, { timeout: 50 });
+    var watchId = geo.watchPosition(noCallback, onError, { timeout: 50 });
     setTimeout(function () {
         equals(numErrors, 1, "Timeout error after one timeout");
     }, 60);
@@ -213,7 +213,7 @@ test('Watching respects age when cached position available', function () {
 
     geo.setCurrentPosition(fakePosition0); // Has timestamp of 4
     geo.setCurrentTime(10);
-    var watchId = geo.watchPosition(onSuccess, function () {}, { maximumAge: 2});
+    var watchId = geo.watchPosition(onSuccess, noCallback, { maximumAge: 2});
     
     ok(!exists(lastPosition), "Cached position too old to return.");
     geo.setCurrentPosition(fakePosition1); // Has timestamp of 5
