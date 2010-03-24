@@ -158,6 +158,8 @@ test('Get notified when watching', function () {
     geo.setCurrentPosition(fakePosition0);
     equals(watch1Position, fakePosition1, "Cleared 1st watch still has 2nd position");
     equals(watch2Position, fakePosition0, "2nd watch called with 3rd position");
+
+    geo.clearWatch(watch2Id);
 });
 
 asyncTest('Timeout observed when watching', function () {
@@ -209,11 +211,26 @@ asyncTest('Timeout errors repeat if no position available', function () {
     }, 60);
     setTimeout(function () {
         equals(numErrors, 2, "Two timeout errors after two periods");
+        geo.clearWatch(watchId);
         start();
     }, 140);
 });
 
 test('Watching respects age when cached position available', function () {
+    var geo = georilla.newGeolocation();
+
+    var lastPosition;
+    var onSuccess = function (position) {
+        lastPosition = position;
+    };
+
+    geo.setCurrentPosition(fakePosition0); // Has timestamp of 4
+    geo.setCurrentTime(10);
+    var watchId = geo.watchPosition(onSuccess, function () {}, { maximumAge: 2});
+    
+    ok(!exists(lastPosition), "Cached position too old to return.");
+    geo.setCurrentPosition(fakePosition1); // Has timestamp of 5
+    equals(lastPosition, fakePosition1, "Maximum age ignored after considering cached value");
 });
 
 });

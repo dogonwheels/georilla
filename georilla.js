@@ -89,6 +89,11 @@ georilla.newGeolocation = function () {
     geo.watchPosition = function (successCallback, errorCallback, options) {
         geo.nextWatchId++;
 
+        var maximumAge = 0;
+        if (exists(options) && exists(options.maximumAge) && (options.maximumAge > 0)) {
+            maximumAge = options.maximumAge;
+        }
+                
         var timeout = Infinity;
         if (exists(options) && exists(options.timeout)) {
             timeout = options.timeout;
@@ -109,7 +114,8 @@ georilla.newGeolocation = function () {
         };
         startTimeout();
 
-        if (exists(geo.currentPosition)) {
+        if (exists(geo.currentPosition) && 
+            (geo.currentTime - geo.currentPosition.timestamp) <= maximumAge) {
             successCallback(geo.currentPosition);
         }
 
