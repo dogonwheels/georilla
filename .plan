@@ -1,3 +1,4 @@
-change error codes to numbers
 push to github
-add Infinity to getPosition
+add way of setting position from other pages - observer?
+add sample punch/unpunch/provide position example page
+add GPS recorder page
