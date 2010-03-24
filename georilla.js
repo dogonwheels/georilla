@@ -59,7 +59,8 @@ georilla.newGeolocation = function () {
 
     geo.setCurrentPosition = function (position) {
         geo.currentPosition = position;
-        
+        geo.currentTime = position.timestamp;
+
         // If we have any active callbacks, let them know and remove them
         if (exists(geo.successCallback)) {
             geo.successCallback(position);

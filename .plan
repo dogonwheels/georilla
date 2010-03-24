@@ -1,6 +1,3 @@
-add age to watch
-tests more consistent
+change error codes to numbers
 push to github
-add 00 to optional params
 add Infinity to getPosition
-set time on setCurrentPosition
