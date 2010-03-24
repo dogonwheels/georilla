@@ -3,6 +3,9 @@
 A monkey patch for replacing the navigator.geolocation of a browser with a fake
 object that has a simple setter for the current position.
 
+Based on W3C's Geolocation API Specification (Editor's Draft 10 February 2010)
+http://dev.w3.org/geo/api/spec-source.html
+
 */
 
 
