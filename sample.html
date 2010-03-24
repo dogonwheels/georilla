@@ -30,8 +30,8 @@
     </head>
     <body>
         <script language="javascript" type="text/javascript">	
-            georilla.punch();
-            console.log("Checking if we have a navigator.geolocation");
+            georilla.patch();
+            
             if (navigator.geolocation) {  
                 document.write('<p><input type="button" onclick="getLocation()" value="Show Geolocation Information" /></p>');
             } else {  
